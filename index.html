@@ -4,7 +4,6 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Điểm Danh Trực Tuyến</title>
-    <!-- Thêm thư viện để đọc file Excel -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.16.9/xlsx.full.min.js"></script>
     <script defer src="script.js"></script>
 </head>
@@ -18,7 +17,7 @@
     <p id="locationStatus"></p>
     <p id="result"></p>
 
-    <button id="exportButton" style="display:none;" onclick="exportToExcel()">Xuất file Excel</button>
+    <button id="exportButton" style="display:none;" onclick="requestPassword()">Xuất file Excel</button>
 
     <script>
         // Hàm để đọc danh sách từ file Excel
@@ -44,6 +43,16 @@
         const allowedLatitude = 10.830651631830856;  // Vĩ độ
         const allowedLongitude = 106.77545051419781; // Kinh độ
         const allowedRadius = 5000;  // Bán kính cho phép (m)
+
+        // Kiểm tra xem thiết bị đã điểm danh hay chưa
+        function hasCheckedIn() {
+            return localStorage.getItem('hasCheckedIn') === 'true';
+        }
+
+        // Lưu trạng thái điểm danh
+        function saveCheckInStatus() {
+            localStorage.setItem('hasCheckedIn', 'true');
+        }
 
         // Kiểm tra vị trí người dùng
         function checkLocation() {
@@ -82,6 +91,12 @@
 
         // Hàm kiểm tra điểm danh
         async function checkAttendance() {
+            // Kiểm tra xem thiết bị đã điểm danh hay chưa
+            if (hasCheckedIn()) {
+                document.getElementById('result').innerText = "Bạn đã điểm danh trước đó!";
+                return;
+            }
+
             const userID = document.getElementById('userID').value.trim();
 
             // Tìm sinh viên trong danh sách
@@ -106,9 +121,24 @@
                     "Thời gian": currentTime
                 });
 
+                // Lưu trạng thái điểm danh
+                saveCheckInStatus();
+
+                // Hiển thị nút xuất file Excel
                 document.getElementById('exportButton').style.display = 'inline';
             } else {
                 document.getElementById('locationStatus').innerText = "Bạn không ở trong khu vực cho phép!";
+            }
+        }
+
+        // Yêu cầu mật khẩu trước khi tải file Excel
+        function requestPassword() {
+            const password = prompt("Vui lòng nhập mật khẩu để tải file Excel:");
+
+            if (password === "123456") {  // Thay thế với mật khẩu thật của bạn
+                exportToExcel();
+            } else {
+                alert("Mật khẩu không chính xác!");
             }
         }
 
