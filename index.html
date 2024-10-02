@@ -9,15 +9,15 @@
 </head>
 <body>
     <style>
-        div.a {
+        div.canhgiua {
 	        text-align: center;
         }
     </style>
 
-    <div class="a">
+    <div class="canhgiua">
     <h1>Điểm danh trực tuyến</h1>
     <p>Vui lòng nhập mã số sinh viên:</p>
-
+    </div>
     <input type="text" id="userID" placeholder="Nhập mã số...">
     <button onclick="checkAttendance()">Điểm danh</button>
 
@@ -25,7 +25,7 @@
     <p id="result"></p>
 
     <button id="exportButton" onclick="requestPassword()">Xuất file Excel</button>
-    </div>
+    
     <script>
         // Hàm để đọc danh sách từ file Excel
         let danhSach = [];
