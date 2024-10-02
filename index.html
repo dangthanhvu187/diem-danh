@@ -12,9 +12,18 @@
 
     <input type="text" id="userID" placeholder="Nhập mã số...">
     <button onclick="checkAttendance()">Điểm danh</button>
-    <button onclick="exportToExcel()">Xuất file Excel</button>
 
     <p id="result"></p>
+
+    <hr>
+    
+    <h2>Xuất file Excel</h2>
+    <p>Vui lòng nhập mật khẩu để tải file:</p>
+    <input type="password" id="passwordInput" placeholder="Nhập mật khẩu...">
+    <button onclick="validatePassword()">Kiểm tra mật khẩu</button>
+    
+    <br><br>
+    <button id="exportButton" onclick="exportToExcel()" disabled>Xuất file Excel</button>
 
     <script>
         // Dữ liệu danh sách từ file JSON
@@ -31,6 +40,9 @@
 
         // Mảng để lưu thông tin điểm danh
         const attendanceRecords = [];
+
+        // Mật khẩu để cho phép tải xuống file
+        const correctPassword = "123456"; // Bạn có thể thay đổi mật khẩu này
 
         // Hàm tính khoảng cách giữa 2 tọa độ (theo km)
         function calculateDistance(lat1, lon1, lat2, lon2) {
@@ -83,6 +95,17 @@
                 });
             } else {
                 document.getElementById('result').innerText = "Trình duyệt của bạn không hỗ trợ Geolocation.";
+            }
+        }
+
+        // Hàm kiểm tra mật khẩu
+        function validatePassword() {
+            const password = document.getElementById('passwordInput').value;
+            if (password === correctPassword) {
+                document.getElementById('exportButton').disabled = false;
+                alert("Mật khẩu chính xác! Bạn có thể tải file Excel.");
+            } else {
+                alert("Mật khẩu không chính xác. Vui lòng thử lại.");
             }
         }
 
