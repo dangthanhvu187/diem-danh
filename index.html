@@ -5,28 +5,30 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Điểm Danh Trực Tuyến</title>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.16.9/xlsx.full.min.js"></script>
-    <script defer src="script.js"></script>
+
+    <!-- Không lưu cache để hạn chế việc xem mã từ file tạm -->
+    <meta http-equiv="Cache-Control" content="no-store" />
 </head>
 <body>
-    <style>
+	<style>
         div.canhgiua {
 	        text-align: center;
         }
     </style>
-
     <div class="canhgiua">
-    <h1>Điểm danh trực tuyến</h1>
+    <h1>ĐIỂM DANH TRỰC TUYẾN</h1>
     <p>Vui lòng nhập mã số sinh viên:</p>
-    
+
     <input type="text" id="userID" placeholder="Nhập mã số...">
     <button onclick="checkAttendance()">Điểm danh</button>
 
     <p id="locationStatus"></p>
     <p id="result"></p>
 
+    <!-- Nút Xuất file Excel luôn hiển thị -->
     <button id="exportButton" onclick="requestPassword()">Xuất file Excel</button>
-    </div>
-	
+	</div>
+    <!-- Mã bảo vệ: ngăn chuột phải và phím tắt -->
     <script>
         // Vô hiệu hóa chuột phải
         document.addEventListener('contextmenu', function(event) {
@@ -46,7 +48,7 @@
         document.addEventListener('dragstart', function(event) {
             event.preventDefault();
         });
-	    
+
         // Hàm để đọc danh sách từ file Excel
         let danhSach = [];
         fetch('danh_sach.xlsx')
@@ -61,25 +63,15 @@
                     id: row['Mã số'],
                     name: row['Họ tên']
                 }));
-                console.log(danhSach);
             });
 
         const attendanceRecords = [];
+        const checkedInUsers = {}; // Lưu các mã số đã điểm danh
 
         // Vị trí giới hạn (có thể thay đổi)
         const allowedLatitude = 10.830651631830856;  // Vĩ độ
         const allowedLongitude = 106.77545051419781; // Kinh độ
-        const allowedRadius = 20000;  // Bán kính cho phép (m)
-
-        // Kiểm tra xem thiết bị đã điểm danh hay chưa
-        function hasCheckedIn() {
-            return localStorage.getItem('hasCheckedIn') === 'true';
-        }
-
-        // Lưu trạng thái điểm danh
-        function saveCheckInStatus() {
-            localStorage.setItem('hasCheckedIn', 'true');
-        }
+        const allowedRadius = 50000;  // Bán kính cho phép (m)
 
         // Kiểm tra vị trí người dùng
         function checkLocation() {
@@ -117,74 +109,72 @@
         }
 
         // Hàm định dạng ngày tháng theo định dạng dd/mm/yyyy
-function formatDate(date) {
-    const day = String(date.getDate()).padStart(2, '0');
-    const month = String(date.getMonth() + 1).padStart(2, '0');
-    const year = date.getFullYear();
-    return `${day}/${month}/${year}`;
-}
+        function formatDate(date) {
+            const day = String(date.getDate()).padStart(2, '0');
+            const month = String(date.getMonth() + 1).padStart(2, '0');
+            const year = date.getFullYear();
+            return `${day}/${month}/${year}`;
+        }
 
-// Hàm kiểm tra điểm danh
-async function checkAttendance() {
-    // Kiểm tra xem thiết bị đã điểm danh hay chưa
-    if (hasCheckedIn()) {
-        document.getElementById('result').innerText = "Bạn đã điểm danh trước đó!";
-        return;
-    }
+        // Hàm kiểm tra điểm danh
+        async function checkAttendance() {
+            const userID = document.getElementById('userID').value.trim();
 
-    const userID = document.getElementById('userID').value.trim();
+            // Kiểm tra xem mã số đã điểm danh hay chưa
+            if (checkedInUsers[userID]) {
+                document.getElementById('result').innerText = "Mã số này đã điểm danh!";
+                return;
+            }
 
-    // Tìm sinh viên trong danh sách
-    const user = danhSach.find(item => item.id == userID);
+            // Tìm sinh viên trong danh sách
+            const user = danhSach.find(item => item.id == userID);
 
-    if (!user) {
-        document.getElementById('result').innerText = "Mã số không hợp lệ!";
-        return;
-    }
+            if (!user) {
+                document.getElementById('result').innerText = "Mã số không hợp lệ!";
+                return;
+            }
 
-    // Kiểm tra vị trí
-    document.getElementById('locationStatus').innerText = "Đang kiểm tra vị trí...";
-    const isAllowed = await checkLocation();
+            // Kiểm tra vị trí
+            document.getElementById('locationStatus').innerText = "Đang kiểm tra vị trí...";
+            const isAllowed = await checkLocation();
 
-    if (isAllowed) {
-        const currentTime = new Date();
-        const formattedDate = formatDate(currentTime);  // Định dạng ngày tháng theo dd/mm/yyyy
-        document.getElementById('result').innerText = `Điểm danh thành công! Xin chào, ${user.name}`;
-        
-        attendanceRecords.push({
-            "Tên": user.name,
-            "Mã Số": user.id,
-            "Thời gian": formattedDate  // Lưu ngày tháng đã định dạng
-        });
+            if (isAllowed) {
+                const currentTime = new Date();
+                const formattedDate = formatDate(currentTime);  // Định dạng ngày tháng theo dd/mm/yyyy
+                document.getElementById('result').innerText = `Điểm danh thành công! Xin chào, ${user.name}`;
+                
+                attendanceRecords.push({
+                    "Tên": user.name,
+                    "Mã Số": user.id,
+                    "Thời gian": formattedDate  // Lưu ngày tháng đã định dạng
+                });
 
-        // Lưu trạng thái điểm danh
-        saveCheckInStatus();
+                // Lưu trạng thái điểm danh của người dùng vào danh sách đã điểm danh
+                checkedInUsers[userID] = true;
 
-        // Hiển thị nút xuất file Excel
-        document.getElementById('exportButton').style.display = 'inline';
-    } else {
-        document.getElementById('locationStatus').innerText = "Bạn không ở trong khu vực cho phép!";
-    }
-}
-
+            } else {
+                document.getElementById('locationStatus').innerText = "Bạn không ở trong khu vực cho phép!";
+            }
+        }
 
         // Yêu cầu mật khẩu trước khi tải file Excel
         function requestPassword() {
             const password = prompt("Vui lòng nhập mật khẩu để tải file Excel:");
 
-            if (password === "Aa123456") {  // Thay thế với mật khẩu thật của bạn
+            if (password === "123456") {  // Thay thế với mật khẩu thật của bạn
                 exportToExcel();
             } else {
                 alert("Mật khẩu không chính xác!");
             }
         }
 
-        // Xuất file Excel
+        // Xuất file Excel và lưu danh sách điểm danh
         function exportToExcel() {
             const ws = XLSX.utils.json_to_sheet(attendanceRecords);
             const wb = XLSX.utils.book_new();
             XLSX.utils.book_append_sheet(wb, ws, "Điểm Danh");
 
+            // Ghi file Excel
             XLSX.writeFile(wb, "diem_danh.xlsx");
         }
     </script>
