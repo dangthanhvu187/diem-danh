@@ -10,14 +10,8 @@
     <meta http-equiv="Cache-Control" content="no-store" />
 </head>
 <body>
-	<style>
-        div.canhgiua {
-	        text-align: center;
-        }
-    </style>
-    <div class="canhgiua">
-    <h1>ĐIỂM DANH TRỰC TUYẾN</h1>
-    <p>Vui lòng nhập mã số sinh viên:</p>
+    <h1>Điểm danh trực tuyến</h1>
+    <p>Vui lòng nhập mã số sinh viên/nhân viên của bạn và kiểm tra vị trí:</p>
 
     <input type="text" id="userID" placeholder="Nhập mã số...">
     <button onclick="checkAttendance()">Điểm danh</button>
@@ -27,7 +21,7 @@
 
     <!-- Nút Xuất file Excel luôn hiển thị -->
     <button id="exportButton" onclick="requestPassword()">Xuất file Excel</button>
-	</div>
+
     <!-- Mã bảo vệ: ngăn chuột phải và phím tắt -->
     <script>
         // Vô hiệu hóa chuột phải
@@ -69,9 +63,19 @@
         const checkedInUsers = {}; // Lưu các mã số đã điểm danh
 
         // Vị trí giới hạn (có thể thay đổi)
-        const allowedLatitude = 10.830651631830856;  // Vĩ độ
-        const allowedLongitude = 106.77545051419781; // Kinh độ
+        const allowedLatitude = 10.762622;  // Vĩ độ
+        const allowedLongitude = 106.660172; // Kinh độ
         const allowedRadius = 50000;  // Bán kính cho phép (m)
+
+        // Kiểm tra xem thiết bị đã điểm danh hay chưa
+        function hasCheckedIn() {
+            return localStorage.getItem('hasCheckedIn') === 'true';
+        }
+
+        // Lưu trạng thái điểm danh
+        function saveCheckInStatus() {
+            localStorage.setItem('hasCheckedIn', 'true');
+        }
 
         // Kiểm tra vị trí người dùng
         function checkLocation() {
@@ -120,6 +124,12 @@
         async function checkAttendance() {
             const userID = document.getElementById('userID').value.trim();
 
+            // Kiểm tra xem thiết bị đã điểm danh hay chưa
+            if (hasCheckedIn()) {
+                document.getElementById('result').innerText = "Thiết bị này đã điểm danh trước đó!";
+                return;
+            }
+
             // Kiểm tra xem mã số đã điểm danh hay chưa
             if (checkedInUsers[userID]) {
                 document.getElementById('result').innerText = "Mã số này đã điểm danh!";
@@ -152,6 +162,11 @@
                 // Lưu trạng thái điểm danh của người dùng vào danh sách đã điểm danh
                 checkedInUsers[userID] = true;
 
+                // Lưu trạng thái điểm danh của thiết bị
+                saveCheckInStatus();
+
+                // Tự động xuất file Excel sau khi điểm danh
+                exportToExcel();
             } else {
                 document.getElementById('locationStatus').innerText = "Bạn không ở trong khu vực cho phép!";
             }
