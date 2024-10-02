@@ -1,0 +1,76 @@
+!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Điểm Danh</title>
+</head>
+<body>
+    <h1>Điểm danh trực tuyến</h1>
+    <p>Vui lòng nhập mã số sinh viên</p>
+
+    <input type="text" id="userID" placeholder="Nhập mã số...">
+    <button onclick="checkAttendance()">Điểm danh</button>
+
+    <p id="result"></p>
+
+    <script>
+        // Dữ liệu danh sách từ file JSON
+        let danhSach = [];
+        fetch('danh_sach.json')
+            .then(response => response.json())
+            .then(data => {
+                danhSach = data;
+            });
+
+        // Tọa độ của vị trí trung tâm cho phép
+        const allowedLocation = { lat: 10.762622, lon: 106.660172 }; // Ví dụ: TP. HCM
+        const maxDistance = 5.0; // Phạm vi cho phép (km)
+
+        // Hàm tính khoảng cách giữa 2 tọa độ (theo km)
+        function calculateDistance(lat1, lon1, lat2, lon2) {
+            const R = 6371; // Bán kính Trái đất (km)
+            const dLat = (lat2 - lat1) * Math.PI / 180;
+            const dLon = (lon2 - lon1) * Math.PI / 180;
+            const a = Math.sin(dLat / 2) * Math.sin(dLat / 2) +
+                      Math.cos(lat1 * Math.PI / 180) * Math.cos(lat2 * Math.PI / 180) *
+                      Math.sin(dLon / 2) * Math.sin(dLon / 2);
+            const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+            const distance = R * c; // Khoảng cách theo km
+            return distance;
+        }
+
+        // Hàm kiểm tra điểm danh và vị trí
+        function checkAttendance() {
+            const userID = document.getElementById('userID').value.trim();
+
+            // Kiểm tra nếu mã số có trong danh sách
+            const user = danhSach.find(item => item.id === userID);
+            if (!user) {
+                document.getElementById('result').innerText = "Mã số không hợp lệ!";
+                return;
+            }
+
+            // Kiểm tra vị trí
+            if (navigator.geolocation) {
+                navigator.geolocation.getCurrentPosition(function(position) {
+                    const userLat = position.coords.latitude;
+                    const userLon = position.coords.longitude;
+
+                    const distance = calculateDistance(userLat, userLon, allowedLocation.lat, allowedLocation.lon);
+
+                    if (distance <= maxDistance) {
+                        document.getElementById('result').innerText = `Điểm danh thành công! Xin chào, ${user.name}`;
+                    } else {
+                        document.getElementById('result').innerText = `Bạn không ở trong phạm vi cho phép. Khoảng cách: ${distance.toFixed(2)} km`;
+                    }
+                }, function(error) {
+                    document.getElementById('result').innerText = "Không thể lấy vị trí của bạn. Vui lòng thử lại!";
+                });
+            } else {
+                document.getElementById('result').innerText = "Trình duyệt của bạn không hỗ trợ Geolocation.";
+            }
+        }
+    </script>
+</body>
+</html>
