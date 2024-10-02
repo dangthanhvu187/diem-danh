@@ -8,6 +8,13 @@
     <script defer src="script.js"></script>
 </head>
 <body>
+    <style>
+        div.a {
+	        text-align: center;
+        }
+    </style>
+
+    <div class="a">
     <h1>Điểm danh trực tuyến</h1>
     <p>Vui lòng nhập mã số sinh viên:</p>
 
@@ -18,7 +25,7 @@
     <p id="result"></p>
 
     <button id="exportButton" onclick="requestPassword()">Xuất file Excel</button>
-
+    </div>
     <script>
         // Hàm để đọc danh sách từ file Excel
         let danhSach = [];
