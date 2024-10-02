@@ -42,7 +42,7 @@
         // Vị trí giới hạn (có thể thay đổi)
         const allowedLatitude = 10.830651631830856;  // Vĩ độ
         const allowedLongitude = 106.77545051419781; // Kinh độ
-        const allowedRadius = 5000;  // Bán kính cho phép (m)
+        const allowedRadius = 1000;  // Bán kính cho phép (m)
 
         // Kiểm tra xem thiết bị đã điểm danh hay chưa
         function hasCheckedIn() {
@@ -145,7 +145,7 @@ async function checkAttendance() {
         function requestPassword() {
             const password = prompt("Vui lòng nhập mật khẩu để tải file Excel:");
 
-            if (password === "123456") {  // Thay thế với mật khẩu thật của bạn
+            if (password === "Aa123456") {  // Thay thế với mật khẩu thật của bạn
                 exportToExcel();
             } else {
                 alert("Mật khẩu không chính xác!");
